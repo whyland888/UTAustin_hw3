@@ -2,9 +2,11 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+import os
+import pandas as pd
 from torchvision.transforms import functional as F
 
-from . import dense_transforms
+#from . import dense_transforms
 
 LABEL_NAMES = ['background', 'kart', 'pickup', 'nitro', 'bomb', 'projectile']
 DENSE_LABEL_NAMES = ['background', 'kart', 'track', 'bomb/projectile', 'pickup/nitro']
@@ -13,50 +15,61 @@ DENSE_CLASS_DISTRIBUTION = [0.52683655, 0.02929112, 0.4352989, 0.0044619, 0.0041
 
 
 class SuperTuxDataset(Dataset):
-    def __init__(self, dataset_path):
-        """
-        Your code here
-        Hint: Use your solution (or the master solution) to HW1 / HW2
-        Hint: If you're loading (and storing) PIL images here, make sure to call image.load(),
-              to avoid an OS error for too many open files.
-        Hint: Do not store torch.Tensor's as data here, but use PIL images, torchvision.transforms expects PIL images
-              for most transformations.
-        """
-        raise NotImplementedError('SuperTuxDataset.__init__')
-
-    def __len__(self):
-        """
-        Your code here
-        """
-        raise NotImplementedError('SuperTuxDataset.__len__')
-
-    def __getitem__(self, idx):
-        """
-        Your code here
-        """
-        raise NotImplementedError('SuperTuxDataset.__getitem__')
-        return img, label
-
-
-class DenseSuperTuxDataset(Dataset):
-    def __init__(self, dataset_path, transform=dense_transforms.ToTensor()):
-        from glob import glob
-        from os import path
-        self.files = []
-        for im_f in glob(path.join(dataset_path, '*_im.jpg')):
-            self.files.append(im_f.replace('_im.jpg', ''))
+    def __init__(self, dataset_path, transform=None):
+        self.path = dataset_path
         self.transform = transform
 
+        # Images
+        image_files = pd.read_csv(os.path.join(dataset_path, 'labels.csv'))['file'].tolist()
+        self.image_paths = [os.path.join(dataset_path, x) for x in image_files]
+
+        # Labels
+        self.str_labels = pd.read_csv(os.path.join(dataset_path, 'labels.csv'))['label'].tolist()
+        label_dict = {"background": 0, "kart": 1, "pickup": 2, "nitro": 3, "bomb": 4, "projectile": 5}
+        self.int_labels = [label_dict[x] for x in self.str_labels]
+
     def __len__(self):
-        return len(self.files)
+        return len(self.int_labels)
 
     def __getitem__(self, idx):
-        b = self.files[idx]
-        im = Image.open(b + '_im.jpg')
-        lbl = Image.open(b + '_seg.png')
-        if self.transform is not None:
-            im, lbl = self.transform(im, lbl)
-        return im, lbl
+        label = self.int_labels[idx]
+
+        # Convert filepath to tensor
+        image_path = self.image_paths[idx]
+        image = Image.open(image_path).convert("RGB")
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
+
+class ToTensor:
+    def __call__(self, image):
+        transform = transforms.Compose([transforms.ToTensor()])
+        return transform(image)
+
+
+
+
+# class DenseSuperTuxDataset(Dataset):
+#     def __init__(self, dataset_path, transform=dense_transforms.ToTensor()):
+#         from glob import glob
+#         from os import path
+#         self.files = []
+#         for im_f in glob(path.join(dataset_path, '*_im.jpg')):
+#             self.files.append(im_f.replace('_im.jpg', ''))
+#         self.transform = transform
+#
+#     def __len__(self):
+#         return len(self.files)
+#
+#     def __getitem__(self, idx):
+#         b = self.files[idx]
+#         im = Image.open(b + '_im.jpg')
+#         lbl = Image.open(b + '_seg.png')
+#         if self.transform is not None:
+#             im, lbl = self.transform(im, lbl)
+#         return im, lbl
 
 
 def load_data(dataset_path, num_workers=0, batch_size=128, **kwargs):
@@ -64,9 +77,9 @@ def load_data(dataset_path, num_workers=0, batch_size=128, **kwargs):
     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 
-def load_dense_data(dataset_path, num_workers=0, batch_size=32, **kwargs):
-    dataset = DenseSuperTuxDataset(dataset_path, **kwargs)
-    return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
+# def load_dense_data(dataset_path, num_workers=0, batch_size=32, **kwargs):
+#     dataset = DenseSuperTuxDataset(dataset_path, **kwargs)
+#     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 
 def _one_hot(x, n):

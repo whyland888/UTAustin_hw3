@@ -1,5 +1,6 @@
 from models import CNNClassifier, save_model
-from utils import load_data, ToTensor
+from utils import load_data, ToTensor, RandomCrop, RandomRotation, RandomHorizontalFlip, RandomVerticalFlip
+from utils import BrightnessJitter, ContrastJitter, SaturationJitter, HueJitter, ColorJitter
 import torch
 import torch_directml
 import torch.optim as optim
@@ -27,15 +28,9 @@ def train(args):
     colab_train_path = r"/content/UTAustin_hw2/data/train"
     colab_valid_path = r"/content/UTAustin_hw2/data/valid"
 
-    # Transforms
-    transform = transforms.Compose([transforms.RandomRotation(30),
-                                    transforms.RandomHorizontalFlip(),
-                                    transforms.ColorJitter(contrast=0.5),
-                                    transforms.ColorJitter(brightness=0.5),
-                                    transforms.ToTensor()])
 
     # Data loading
-    train_loader = load_data(local_train_path, batch_size=batch_size, transform=ToTensor())
+    train_loader = load_data(local_train_path, batch_size=batch_size, transform=HueJitter())
     valid_loader = load_data(local_valid_path, batch_size=batch_size, transform=ToTensor())
 
     model = CNNClassifier(layers=layers).to(device)

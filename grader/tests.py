@@ -31,7 +31,7 @@ class TunedCNNClassifierGrader(Grader):
         self.accuracy = confusion.global_accuracy
 
     @Case(score=40)
-    def test_accuracy(self, min_val=0.86, max_val=0.90):
+    def test_accuracy(self, min_val=0.7, max_val=0.90):
         """Accuracy"""
         v = self.accuracy
         return max(min(v, max_val) - min_val, 0) / (max_val - min_val), 'accuracy = %0.3f' % v

@@ -2,7 +2,7 @@ from models import CNNClassifier, save_model
 from utils import load_data, ToTensor, RandomCrop, RandomRotation, RandomHorizontalFlip, RandomVerticalFlip
 from utils import BrightnessJitter, ContrastJitter, SaturationJitter, HueJitter, ColorJitter
 import torch
-import torch_directml
+#import torch_directml
 import torch.optim as optim
 import torch.utils.tensorboard as tb
 from torchvision import transforms

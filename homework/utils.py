@@ -5,8 +5,7 @@ from torchvision import transforms
 import os
 import pandas as pd
 from torchvision.transforms import functional as F
-
-import dense_transforms
+import homework.dense_transforms
 
 LABEL_NAMES = ['background', 'kart', 'pickup', 'nitro', 'bomb', 'projectile']
 DENSE_LABEL_NAMES = ['background', 'kart', 'track', 'bomb/projectile', 'pickup/nitro']

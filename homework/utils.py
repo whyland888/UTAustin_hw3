@@ -5,7 +5,7 @@ from torchvision import transforms
 import os
 import pandas as pd
 from torchvision.transforms import functional as F
-#import homework.dense_transforms
+from homework.dense_transforms import ToTensor, Compose, RandomHorizontalFlip, label_to_pil_image
 
 LABEL_NAMES = ['background', 'kart', 'pickup', 'nitro', 'bomb', 'projectile']
 DENSE_LABEL_NAMES = ['background', 'kart', 'track', 'bomb/projectile', 'pickup/nitro']
@@ -111,8 +111,9 @@ class ColorJitter:
                                         transforms.ToTensor()])
         return transform(image)
 
+
 class DenseSuperTuxDataset(Dataset):
-    def __init__(self, dataset_path, transform=dense_transforms.ToTensor()):
+    def __init__(self, dataset_path, transform=ToTensor()):
         from glob import glob
         from os import path
         self.files = []
@@ -196,8 +197,8 @@ class ConfusionMatrix(object):
 
 
 if __name__ == '__main__':
-    dataset = DenseSuperTuxDataset('dense_data/train', transform=dense_transforms.Compose(
-        [dense_transforms.RandomHorizontalFlip(), dense_transforms.ToTensor()]))
+    dataset = DenseSuperTuxDataset('dense_data/train', transform=Compose(
+        [RandomHorizontalFlip(), ToTensor()]))
     from pylab import show, imshow, subplot, axis
 
     for i in range(15):
@@ -206,7 +207,7 @@ if __name__ == '__main__':
         imshow(F.to_pil_image(im))
         axis('off')
         subplot(5, 6, 2 * i + 2)
-        imshow(dense_transforms.label_to_pil_image(lbl))
+        imshow(label_to_pil_image(lbl))
         axis('off')
     show()
     import numpy as np

@@ -25,8 +25,8 @@ def train(args):
     # Paths to data
     local_train_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\train"
     local_valid_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\valid"
-    colab_train_path = r"/content/UTAustin_hw2/data/train"
-    colab_valid_path = r"/content/UTAustin_hw2/data/valid"
+    colab_train_path = r"/content/UTAustin_hw3/data/train"
+    colab_valid_path = r"/content/UTAustin_hw3/data/valid"
 
 
     # Data loading

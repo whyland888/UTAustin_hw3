@@ -38,6 +38,9 @@ class SuperTuxDataset(Dataset):
         image = Image.open(image_path).convert("RGB")
         if self.transform:
             image = self.transform(image)
+        else:
+            totensor = ToTensor()
+            image = totensor(image)
 
         return image, label
 

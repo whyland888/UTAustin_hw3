@@ -46,7 +46,7 @@ class CNNClassifier(torch.nn.Module):
 
 
 class FCN(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, in_channels=3, n_classes=5):
         super().__init__()
         """
         Your code here.
@@ -56,7 +56,15 @@ class FCN(torch.nn.Module):
         Hint: Use residual connections
         Hint: Always pad by kernel_size / 2, use an odd kernel_size
         """
-        raise NotImplementedError('FCN.__init__')
+
+        self.encoder_conv1 = torch.nn.Conv2d(in_channels, 64, kernel_size=3, padding=1)
+        self.encoder_conv2 = torch.nn.Conv2d(64, 128, kernel_size=3, padding=1, stride=2)
+
+        # Decoder (upsampling path)
+        self.decoder_upconv1 = torch.nn.ConvTranspose2d(128, 64, kernel_size=3, padding=1, output_padding=1, stride=2)
+        self.decoder_conv2 = torch.nn.Conv2d(64, n_classes, kernel_size=3, padding=1)
+
+
 
     def forward(self, x):
         """
@@ -68,7 +76,22 @@ class FCN(torch.nn.Module):
               if required (use z = z[:, :, :H, :W], where H and W are the height and width of a corresponding strided
               convolution
         """
-        raise NotImplementedError('FCN.forward')
+        # Encoder
+        x1 = torch.relu(self.encoder_conv1(x))
+        x2 = torch.relu(self.encoder_conv2(x1))
+
+        # Decoder
+        x3 = torch.relu(self.decoder_upconv1(x2))
+
+        # Crop the output to match the input size
+        target_size = x1.size()[2:]  # Size of the encoder output
+        crop_h = (x3.size()[2] - target_size[0]) // 2
+        crop_w = (x3.size()[3] - target_size[1]) // 2
+        x3_cropped = x3[:, :, crop_h:crop_h + target_size[0], crop_w:crop_w + target_size[1]]
+
+        x4 = self.decoder_conv2(x3_cropped)
+
+        return x4
 
 
 model_factory = {

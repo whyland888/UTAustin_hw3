@@ -2,6 +2,18 @@ import torch
 import torch.nn.functional as F
 
 
+class Normalize(torch.nn.Module):
+    def __init__(self, mean, std):
+        super(Normalize, self).__init__()
+        self.mean = torch.tensor(mean)
+        self.std = torch.tensor(std)
+
+    def forward(self, input):
+        x = input - self.mean.view(1, 3, 1, 1)
+        x = x / self.std.view(1, 3, 1, 1)
+        return x
+
+
 class CNNClassifier(torch.nn.Module):
     class Block(torch.nn.Module):
         def __init__(self, n_input, n_output, stride=1, activation='relu'):
@@ -24,25 +36,44 @@ class CNNClassifier(torch.nn.Module):
 
     def __init__(self, layers=[32,64,128], n_input_channels=3, n_classes=6, activation='relu'):
         super().__init__()
+
+        # Activation Function
         if activation == 'relu':
             activation_layer = torch.nn.ReLU()
         elif activation == 'leaky_relu':
             activation_layer = torch.nn.LeakyReLU(negative_slope=.1)
+
+        # First layers
         L = [torch.nn.Conv2d(n_input_channels, 32, kernel_size=7, padding=3, stride=2),
              torch.nn.BatchNorm2d(32),
             activation_layer,
             torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)]
+
+        # Add Layers
         c = 32
         for l in layers:
             L.append(self.Block(c, l, stride=2))
             c = l
+
+        # Put layers together
         self.network = torch.nn.Sequential(*L)
+
+        # Append linear layer to the end
         self.classifier = torch.nn.Linear(layers[-1], n_classes)
 
     def forward(self, x):
-        z = self.network(x)  # compute features
-        z = z.mean(dim=[2, 3])  # global average pooling
-        return self.classifier(z)
+
+        # Normalize input
+        normalize = Normalize(mean=[0.3234, 0.3309, 0.3443], std=[0.4108, 0.3987, 0.4246])
+        x = normalize(x)
+
+        # Compute feature maps
+        x = self.network(x)
+
+        # Global average pooling (reduces height and width to a single number while retaining channels)
+        x = x.mean(dim=[2, 3])
+
+        return self.classifier(x)
 
 
 class FCN(torch.nn.Module):
@@ -64,8 +95,6 @@ class FCN(torch.nn.Module):
         self.decoder_upconv1 = torch.nn.ConvTranspose2d(128, 64, kernel_size=3, padding=1, output_padding=1, stride=2)
         self.decoder_conv2 = torch.nn.Conv2d(64, n_classes, kernel_size=3, padding=1)
 
-
-
     def forward(self, x):
         """
         Your code here
@@ -76,6 +105,11 @@ class FCN(torch.nn.Module):
               if required (use z = z[:, :, :H, :W], where H and W are the height and width of a corresponding strided
               convolution
         """
+
+        # Normalize input
+        normalize = Normalize(mean=[0.2784, 0.2653, 0.2624], std=[0.3466, 0.3290, 0.3459])
+        x = normalize(x)
+
         # Encoder
         x1 = torch.relu(self.encoder_conv1(x))
         x2 = torch.relu(self.encoder_conv2(x1))

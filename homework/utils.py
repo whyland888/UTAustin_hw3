@@ -133,7 +133,8 @@ class DenseSuperTuxDataset(Dataset):
         im = Image.open(b + '_im.jpg')
         lbl = Image.open(b + '_seg.png')
         if self.transform is not None:
-            im, lbl = self.transform(im, lbl)
+            im = self.transform(im)
+            lbl = self.transform(lbl)
         return im, lbl
 
 

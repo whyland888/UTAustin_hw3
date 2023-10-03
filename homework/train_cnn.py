@@ -1,6 +1,6 @@
 from models import CNNClassifier, save_model
 from utils import load_data, ToTensor, RandomCrop, RandomRotation, RandomHorizontalFlip, RandomVerticalFlip
-from utils import BrightnessJitter, ContrastJitter, SaturationJitter, HueJitter, ColorJitter, Normalize
+from utils import BrightnessJitter, ContrastJitter, SaturationJitter, HueJitter, ColorJitter
 import torch
 # import torch_directml
 import torch.optim as optim
@@ -111,11 +111,11 @@ if __name__ == '__main__':
         choices=['sgd', 'adamw'],
         help='Choose one of the available options: sgd, adamw'
     )
-    parser.add_argument(
-        '--activation',
-        choices=['relu', 'leaky_relu'],
-        help='Choose one of the available options: relu, leaky_relu'
-    )
+    # parser.add_argument(
+    #     '--activation',
+    #     choices=['relu', 'leaky_relu'],
+    #     help='Choose one of the available options: relu, leaky_relu'
+    # )
     parser.add_argument(
         '--layers',
         nargs='+',

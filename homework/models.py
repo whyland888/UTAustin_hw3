@@ -21,16 +21,21 @@ class Block(torch.nn.Module):
             torch.nn.Conv2d(n_input, n_output, kernel_size=3, padding=1, stride=stride),
             torch.nn.BatchNorm2d(n_output),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(n_output, n_output, kernel_size=3, padding=1, stride=stride),
+            torch.nn.Conv2d(n_output, n_output, kernel_size=3, padding=1, stride=1),
             torch.nn.BatchNorm2d(n_output),
             torch.nn.ReLU()
         )
-        # self.downsample = torch.nn.Sequential(torch.nn.Conv2d(n_input, n_output, 1),
-        #                                       torch.nn.BatchNorm2d(n_output))
+        self.downsample = None
+        if stride != 1 or n_input != n_output:
+            self.downsample = torch.nn.Sequential(
+                torch.nn.Conv2d(n_input, n_output, kernel_size=1, stride=stride),
+                torch.nn.BatchNorm2d(n_output))
 
     def forward(self, x):
-        #identity = self.downsample(x)
-        return self.net(x) # + identity
+        identity = x
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        return self.net(x) + identity
 
 
 class TBlock(torch.nn.Module):
@@ -39,20 +44,26 @@ class TBlock(torch.nn.Module):
 
         self.net = torch.nn.Sequential(
             torch.nn.ConvTranspose2d(n_input, n_output, kernel_size=3, padding=1,
-                                   output_padding=1, stride=stride),
+                                     output_padding=1, stride=stride),
             torch.nn.BatchNorm2d(n_output),
             torch.nn.ReLU(),
             torch.nn.ConvTranspose2d(n_output, n_output, kernel_size=3, padding=1,
-                                   output_padding=1, stride=stride),
+                                     stride=1),
             torch.nn.BatchNorm2d(n_output),
             torch.nn.ReLU()
       )
-        # self.downsample = torch.nn.Sequential(torch.nn.Conv2d(n_input, n_output, 1),
-        #                                     torch.nn.BatchNorm2d(n_output))
+        self.downsample = None
+        if stride != 1 or n_input != n_output:
+            self.downsample = torch.nn.Sequential(
+                torch.nn.ConvTranspose2d(n_input, n_output, kernel_size=1,
+                                         output_padding=1, stride=stride),
+                torch.nn.BatchNorm2d(n_output))
 
     def forward(self, x):
-        #identity = self.downsample(x)
-        return self.net(x) # + identity
+        identity = x
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        return self.net(x) + identity
 
 
 class CNNClassifier(torch.nn.Module):

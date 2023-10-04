@@ -7,10 +7,11 @@ class Normalize(torch.nn.Module):
         super(Normalize, self).__init__()
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
+        self.device = device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     def forward(self, input):
-        x = input - self.mean.view(1, 3, 1, 1)
-        x = x / self.std.view(1, 3, 1, 1)
+        x = input - self.mean.view(1, 3, 1, 1).to(self.device)
+        x = x / self.std.view(1, 3, 1, 1).to(self.device)
         return x
 
 

@@ -30,7 +30,7 @@ def train(args):
 
 
     # Data loading
-    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=HueJitter())
+    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=ColorJitter())
     valid_loader = load_data(colab_valid_path, batch_size=batch_size, transform=ToTensor())
 
     model = CNNClassifier(layers=layers, normalize=True).to(device)

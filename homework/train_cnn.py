@@ -33,7 +33,7 @@ def train(args):
     train_loader = load_data(colab_train_path, batch_size=batch_size, transform=HueJitter())
     valid_loader = load_data(colab_valid_path, batch_size=batch_size, transform=ToTensor())
 
-    model = CNNClassifier(layers=layers).to(device)
+    model = CNNClassifier(layers=layers, normalize=True).to(device)
     criterion = torch.nn.CrossEntropyLoss()
     if args.optim == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=.90)

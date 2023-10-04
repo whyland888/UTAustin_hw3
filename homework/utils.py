@@ -10,7 +10,7 @@ from torchvision.transforms import functional as F
 
 LABEL_NAMES = ['background', 'kart', 'pickup', 'nitro', 'bomb', 'projectile']
 DENSE_LABEL_NAMES = ['background', 'kart', 'track', 'bomb/projectile', 'pickup/nitro']
-# Distribution of classes on dense training set (background and track dominate (96%)
+# Distribution of classes on dense training set (background and track dominate (96.0%)
 DENSE_CLASS_DISTRIBUTION = [0.52683655, 0.02929112, 0.4352989, 0.0044619, 0.00411153]
 
 

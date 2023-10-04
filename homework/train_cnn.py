@@ -23,15 +23,15 @@ def train(args):
     layers = args.layers
 
     # Paths to data
-    local_train_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\train"
-    local_valid_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\valid"
+    #local_train_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\train"
+    #local_valid_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\valid"
     colab_train_path = r"/content/UTAustin_hw3/data/train"
     colab_valid_path = r"/content/UTAustin_hw3/data/valid"
 
 
     # Data loading
-    train_loader = load_data(local_train_path, batch_size=batch_size, transform=HueJitter())
-    valid_loader = load_data(local_valid_path, batch_size=batch_size, transform=ToTensor())
+    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=HueJitter())
+    valid_loader = load_data(colab_valid_path, batch_size=batch_size, transform=ToTensor())
 
     model = CNNClassifier(layers=layers).to(device)
     criterion = torch.nn.CrossEntropyLoss()

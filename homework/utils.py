@@ -116,6 +116,13 @@ class ColorJitter:
         return transform(image)
 
 
+class Jitter:
+    def __call__(self, image):
+        transform = transforms.Compose([transforms.RandomHorizontalFlip(.1),
+                                        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+                                        transforms.ToTensor()])
+        return transform(image)
+
 class DenseSuperTuxDataset(Dataset):
     def __init__(self, dataset_path, transform=ToTensor()):
         from glob import glob

@@ -111,7 +111,7 @@ class HueJitter:
 
 class ColorJitter:
     def __call__(self, image):
-        transform = transforms.Compose([transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
+        transform = transforms.Compose([transforms.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.15, hue=0.15),
                                         transforms.ToTensor()])
         return transform(image)
 

@@ -69,8 +69,9 @@ class TBlock(torch.nn.Module):
 
 class CNNClassifier(torch.nn.Module):
 
-    def __init__(self, layers=[32,64,128], n_input_channels=3, n_classes=6):
+    def __init__(self, layers=[32,64,128], n_input_channels=3, n_classes=6, normalize=False):
         super().__init__()
+        self.normalize = normalize
 
         # First layers
         L = [torch.nn.Conv2d(n_input_channels, 32, kernel_size=7, padding=3, stride=2),
@@ -93,8 +94,9 @@ class CNNClassifier(torch.nn.Module):
     def forward(self, x):
 
         # Normalize input
-        normalize = Normalize(mean=[0.3234, 0.3309, 0.3443], std=[0.4108, 0.3987, 0.4246])
-        x = normalize(x)
+        if self.normalize:
+            normalize = Normalize(mean=[0.3234, 0.3309, 0.3443], std=[0.4108, 0.3987, 0.4246])
+            x = normalize(x)
 
         # Compute feature maps
         x = self.network(x)

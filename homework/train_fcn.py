@@ -40,6 +40,7 @@ def log(logger, imgs, lbls, logits, global_step):
                                                   label_to_pil_image(logits[0].argmax(dim=0).cpu()).
                                                   convert('RGB')), global_step, dataformats='HWC')
 
+
 if __name__ == '__main__':
     import argparse
 

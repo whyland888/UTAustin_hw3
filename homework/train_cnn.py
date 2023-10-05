@@ -30,7 +30,7 @@ def train(args):
 
 
     # Data loading
-    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=Jitter())
+    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=ColorJitter())
     valid_loader = load_data(colab_valid_path, batch_size=batch_size, transform=ToTensor())
 
     model = CNNClassifier(layers=layers, normalize=True).to(device)
@@ -106,16 +106,20 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, required=True)
     parser.add_argument('--n_epochs', type=int, required=True)
     parser.add_argument('--batch_size', type=int, required=True)
+    parser.add_argument('--rand_crop', type=int, required=True)
+    parser.add_argument('--h_flip', type=int, required=True)
+    parser.add_argument('--v_flip', type=int, required=True)
+    parser.add_argument('--rand_rotate', type=int, required=True)
+    parser.add_argument('--brightness', type=float, required=True)
+    parser.add_argument('--contrast', type=float, required=True)
+    parser.add_argument('--saturation', type=float, required=True)
+    parser.add_argument('--hue', type=float, required=True)
     parser.add_argument(
         '--optim',
         choices=['sgd', 'adamw'],
         help='Choose one of the available options: sgd, adamw'
     )
-    # parser.add_argument(
-    #     '--activation',
-    #     choices=['relu', 'leaky_relu'],
-    #     help='Choose one of the available options: relu, leaky_relu'
-    # )
+
     parser.add_argument(
         '--layers',
         nargs='+',

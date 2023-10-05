@@ -46,82 +46,62 @@ class SuperTuxDataset(Dataset):
         return image, label
 
 
+class Transform:
+    def __call__(self, args, image):
+
+        # Random Cropping
+        random_crop = None
+        if args.rand_crop is not None:
+            rand_crop = transforms.RandomCrop(args.rand_crop)
+
+        # Horizontal flipping
+        h_flip = None
+        if args.h_flip is not None:
+            h_flip = transforms.RandomHorizontalFlip(args.h_flip)
+
+        # Vertical flipping
+        v_flip = None
+        if args.v_flip is not None:
+            v_flip = transforms.RandomVerticalFlip(args.v_flip)
+
+        # Random Rotation
+        rand_rotate = None
+        if args.rand_rotate is not None:
+            rand_rotate = transforms.RandomRotation(args.rand_rotate)
+
+        # Brightness
+        brightness = None
+        if args.brightness is not None:
+            brightness = transforms.ColorJitter(brightness=args.brightness)
+
+        # Contrast
+        contrast = None
+        if args.contrast is not None:
+            contrast = transforms.ColorJitter(contrast=args.contrast)
+
+        # Saturation
+        saturation = None
+        if args.saturation is not None:
+            saturation = transforms.ColorJitter(saturation=args.saturation)
+
+        # Hue
+        hue = None
+        if args.hue is not None:
+            hue = transforms.ColorJitter(hue=args.hue)
+
+        transformations = [random_crop, h_flip, v_flip, rand_rotate, brightness, contrast, saturation, hue]
+        transformations = [x for x in transformations if x is not None]
+        transformations.append(transforms.ToTensor())
+        transform = transforms.Compose(transformations)
+        return transform(image)
+
+
+
 class ToTensor:
     def __call__(self, image):
         transform = transforms.Compose([transforms.ToTensor()])
         return transform(image)
 
-
-class RandomCrop:
-    def __call__(self, image):
-        crop_size = (50, 50)
-        transform = transforms.Compose([transforms.RandomCrop(crop_size),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class RandomRotation:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.RandomRotation(45),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class RandomHorizontalFlip:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.RandomHorizontalFlip(.5),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class RandomVerticalFlip:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.RandomVerticalFlip(.5),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class BrightnessJitter:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.ColorJitter(brightness=0.25),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class ContrastJitter:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.ColorJitter(contrast=0.2),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class SaturationJitter:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.ColorJitter(saturation=0.2),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class HueJitter:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.ColorJitter(hue=0.10),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class ColorJitter:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
-                                        transforms.ToTensor()])
-        return transform(image)
-
-
-class Jitter:
-    def __call__(self, image):
-        transform = transforms.Compose([transforms.RandomHorizontalFlip(.1),
-                                        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
-                                        transforms.ToTensor()])
-        return transform(image)
 
 class DenseSuperTuxDataset(Dataset):
     def __init__(self, dataset_path, transform=ToTensor()):

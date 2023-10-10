@@ -1,8 +1,6 @@
 from models import CNNClassifier, save_model
-from utils import load_data, ToTensor, RandomCrop, RandomRotation, RandomHorizontalFlip, RandomVerticalFlip
-from utils import BrightnessJitter, ContrastJitter, SaturationJitter, HueJitter, ColorJitter, Jitter
+from utils import load_data, ToTensor, Transform
 import torch
-# import torch_directml
 import torch.optim as optim
 import torch.utils.tensorboard as tb
 from torchvision import transforms
@@ -30,7 +28,7 @@ def train(args):
 
 
     # Data loading
-    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=ColorJitter())
+    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=Transform())
     valid_loader = load_data(colab_valid_path, batch_size=batch_size, transform=ToTensor())
 
     model = CNNClassifier(layers=layers, normalize=True).to(device)

@@ -96,7 +96,6 @@ class Transform:
         return transform(image)
 
 
-
 class ToTensor:
     def __call__(self, image):
         transform = transforms.Compose([transforms.ToTensor()])

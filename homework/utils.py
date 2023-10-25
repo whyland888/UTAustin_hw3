@@ -52,7 +52,7 @@ class Transform:
         # Random Cropping
         random_crop = None
         if args.rand_crop is not None:
-            rand_crop = transforms.RandomCrop(args.rand_crop)
+            random_crop = transforms.RandomCrop(args.rand_crop)
 
         # Horizontal flipping
         h_flip = None

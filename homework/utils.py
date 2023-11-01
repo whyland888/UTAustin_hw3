@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import os
 import pandas as pd
+import numpy as np
 from torchvision.transforms import functional as F
 #from homework.dense_transforms import ToTensor, Compose, RandomHorizontalFlip, label_to_pil_image
 #from homework import dense_transforms
@@ -15,9 +16,12 @@ DENSE_CLASS_DISTRIBUTION = [0.52683655, 0.02929112, 0.4352989, 0.0044619, 0.0041
 
 
 class SuperTuxDataset(Dataset):
-    def __init__(self, dataset_path, transform=None):
+    def __init__(self, dataset_path, transform, args):
         self.path = dataset_path
         self.transform = transform
+        self.args = args
+
+
 
         # Images
         image_files = pd.read_csv(os.path.join(dataset_path, 'labels.csv'))['file'].tolist()
@@ -37,8 +41,8 @@ class SuperTuxDataset(Dataset):
         # Convert filepath to tensor
         image_path = self.image_paths[idx]
         image = Image.open(image_path).convert("RGB")
-        if self.transform:
-            image = self.transform(image)
+        if self.transform is not None:
+            image = self.transform(self.args, image)
         else:
             totensor = ToTensor()
             image = totensor(image)
@@ -120,12 +124,17 @@ class DenseSuperTuxDataset(Dataset):
         lbl = Image.open(b + '_seg.png')
         if self.transform is not None:
             im = self.transform(im)
+            shape = np.shape(np.array(lbl))
+            lbl = np.array(lbl).flatten()
+            lbl = [int(x) for x in lbl]
+            lbl = np.reshape(lbl, shape)
             lbl = self.transform(lbl)
+
         return im, lbl
 
 
-def load_data(dataset_path, num_workers=0, batch_size=128, **kwargs):
-    dataset = SuperTuxDataset(dataset_path, **kwargs)
+def load_data(dataset_path, args, transform, num_workers=0, batch_size=128):
+    dataset = SuperTuxDataset(dataset_path=dataset_path, args=args, transform=transform)
     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 

@@ -18,18 +18,26 @@ def train(args):
     batch_size = args.batch_size
     learning_rate = args.lr
     num_epochs = args.n_epochs
-    layers = args.layers
+    layers = args.layers[0]
+    layers = [2**(i+5) for i in range(layers)]
+    print(layers)
+
 
     # Paths to data
     #local_train_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\train"
     #local_valid_path = r"C:\Users\Will\OneDrive\Desktop\State Farm\UT Austin Deep Learning\UTAustin_hw3\data\valid"
-    colab_train_path = r"/content/UTAustin_hw3/data/train"
-    colab_valid_path = r"/content/UTAustin_hw3/data/valid"
+    ubuntu_train_path = r"/home/william/Desktop/UT_Austin_Computer_Vision/UTAustin_hw3/data/train"
+    ubuntu_valid_path = r"/home/william/Desktop/UT_Austin_Computer_Vision/UTAustin_hw3/data/valid"
+    #colab_train_path = r"/content/UTAustin_hw3/data/train"
+    #colab_valid_path = r"/content/UTAustin_hw3/data/valid"
 
 
     # Data loading
-    train_loader = load_data(colab_train_path, batch_size=batch_size, transform=Transform())
-    valid_loader = load_data(colab_valid_path, batch_size=batch_size, transform=ToTensor())
+    train_loader = load_data(dataset_path=ubuntu_train_path, num_workers=4, batch_size=batch_size,
+                             args=args, transform=Transform())
+
+    valid_loader = load_data(dataset_path=ubuntu_valid_path, num_workers=4, batch_size=batch_size,
+                             args=args, transform=None)
 
     model = CNNClassifier(layers=layers, normalize=True).to(device)
     criterion = torch.nn.CrossEntropyLoss()

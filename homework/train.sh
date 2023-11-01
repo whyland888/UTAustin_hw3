@@ -1,16 +1,18 @@
-export learning_rate=.001
-export n_epochs=10
+export PYTHON=/home/william/anaconda3/envs/dl_hw_03/bin/python
+
+export learning_rate=.002
+export n_epochs=20
 export batch_size=400
-export random_crop=50
-export horizontal_flip=0.1
-export vertical_flip=0.1
-export random_rotate=(15,90)
-export brightness=(.1,.9)
-export contrast=(.1,.9)
-export saturation=(.1,.9)
-export hue=(.1,.5)
+export random_crop=64
+export horizontal_flip=.5
+export vertical_flip=0
+export random_rotate=0
+export brightness=.5
+export contrast=.1
+export saturation=.1
+export hue=.1
 export optim="adamw"
-export layers=[32,64,128]
+export layers=3
 
 # Run model
 echo "========= Training CNN ========"
@@ -25,8 +27,9 @@ $PYTHON train_cnn.py \
 	--v_flip $vertical_flip \
 	--rand_rotate $random_rotate \
 	--brightness $brightness \
+	--contrast $contrast \
 	--saturation $saturation \
 	--hue $hue \
 	--optim $optim \
-	--layers $layers
+	--layers $layers \
 

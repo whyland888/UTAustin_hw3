@@ -30,8 +30,8 @@ def train(args):
     # Data loading
     # train_loader = load_dense_data(dataset_path=ubuntu_train_path)
     # valid_loader = load_dense_data(dataset_path=ubuntu_valid_path)
-    train_loader = load_dense_data(dataset_path=colab_train_path, transform=Transform())
-    valid_loader = load_dense_data(dataset_path=colab_valid_path, transform=ToTensor())
+    train_loader = load_dense_data(dataset_path=colab_train_path, transform=Transform(), args=args)
+    valid_loader = load_dense_data(dataset_path=colab_valid_path, transform=ToTensor(), args=args)
 
     # Model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -112,10 +112,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--log_dir')
-    # Put custom arguments here
     parser.add_argument('--lr', type=float, required=True)
     parser.add_argument('--n_epochs', type=int, required=True)
     parser.add_argument('--batch_size', type=int, required=True)
-
+    parser.add_argument('--h_flip', type=float, required=True)
+    parser.add_argument('--v_flip', type=float, required=True)
+    parser.add_argument('--rand_rotate', type=int, required=True)
+    parser.add_argument('--brightness', type=float, required=True)
+    parser.add_argument('--contrast', type=float, required=True)
+    parser.add_argument('--saturation', type=float, required=True)
+    parser.add_argument('--hue', type=float, required=True)
     args = parser.parse_args()
     train(args)

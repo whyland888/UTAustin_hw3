@@ -21,8 +21,6 @@ class SuperTuxDataset(Dataset):
         self.transform = transform
         self.args = args
 
-
-
         # Images
         image_files = pd.read_csv(os.path.join(dataset_path, 'labels.csv'))['file'].tolist()
         self.image_paths = [os.path.join(dataset_path, x) for x in image_files]
@@ -54,9 +52,9 @@ class Transform:
     def __call__(self, args, image):
 
         # Random Cropping
-        random_crop = None
-        if args.rand_crop is not None:
-            random_crop = transforms.RandomCrop(args.rand_crop)
+        # random_crop = None
+        # if args.rand_crop is not None:
+        #     random_crop = transforms.RandomCrop(args.rand_crop)
 
         # Horizontal flipping
         h_flip = None
@@ -93,7 +91,7 @@ class Transform:
         if args.hue is not None:
             hue = transforms.ColorJitter(hue=args.hue)
 
-        transformations = [random_crop, h_flip, v_flip, rand_rotate, brightness, contrast, saturation, hue]
+        transformations = [h_flip, v_flip, rand_rotate, brightness, contrast, saturation, hue]
         transformations = [x for x in transformations if x is not None]
         transformations.append(transforms.ToTensor())
         transform = transforms.Compose(transformations)
@@ -107,9 +105,10 @@ class ToTensor:
 
 
 class DenseSuperTuxDataset(Dataset):
-    def __init__(self, dataset_path, transform):
+    def __init__(self, dataset_path, transform, args):
         from glob import glob
         from os import path
+        self.args = args
         self.files = []
         for im_f in glob(path.join(dataset_path, '*_im.jpg')):
             self.files.append(im_f.replace('_im.jpg', ''))
@@ -123,12 +122,13 @@ class DenseSuperTuxDataset(Dataset):
         im = Image.open(b + '_im.jpg')
         lbl = Image.open(b + '_seg.png')
         if self.transform is not None:
-            im = self.transform(im)
+            im = self.transform(self.args, im)
             shape = np.shape(np.array(lbl))
             lbl = np.array(lbl).flatten()
             lbl = [int(x) for x in lbl]
             lbl = np.reshape(lbl, shape)
-            lbl = self.transform(lbl)
+            totensor = ToTensor()
+            lbl = totensor(lbl)
 
         return im, lbl
 
@@ -138,8 +138,8 @@ def load_data(dataset_path, args, transform, num_workers=0, batch_size=128):
     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 
-def load_dense_data(dataset_path, transform, num_workers=0, batch_size=32):
-    dataset = DenseSuperTuxDataset(dataset_path, transform)
+def load_dense_data(dataset_path, transform, args, num_workers=0, batch_size=32):
+    dataset = DenseSuperTuxDataset(dataset_path, transform, args)
     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 

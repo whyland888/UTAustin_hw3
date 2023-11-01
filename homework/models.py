@@ -16,55 +16,33 @@ class Normalize(torch.nn.Module):
 
 
 class Block(torch.nn.Module):
-    def __init__(self, n_input, n_output, stride=1):
+    def __init__(self, n_input, n_output):
         super().__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Conv2d(n_input, n_output, kernel_size=3, padding=1, stride=stride),
+            torch.nn.Conv2d(n_input, n_output, kernel_size=3, padding=1, stride=1),
             torch.nn.BatchNorm2d(n_output),
             torch.nn.ReLU(),
             torch.nn.Conv2d(n_output, n_output, kernel_size=3, padding=1, stride=1),
             torch.nn.BatchNorm2d(n_output),
             torch.nn.ReLU()
         )
-        self.downsample = None
-        if stride != 1 or n_input != n_output:
-            self.downsample = torch.nn.Sequential(
-                torch.nn.Conv2d(n_input, n_output, kernel_size=1, stride=stride),
-                torch.nn.BatchNorm2d(n_output))
 
     def forward(self, x):
-        identity = x
-        if self.downsample is not None:
-            identity = self.downsample(x)
-        return self.net(x) + identity
+        return self.net(x)
 
 
 class TBlock(torch.nn.Module):
-    def __init__(self, n_input, n_output, stride=1):
+    def __init__(self, n_input, n_output):
         super().__init__()
 
         self.net = torch.nn.Sequential(
-            torch.nn.ConvTranspose2d(n_input, n_output, kernel_size=3, padding=1,
-                                     output_padding=1, stride=stride),
+            torch.nn.ConvTranspose2d(n_input, n_output, kernel_size=2, stride=2),
+            torch.nn.Conv2d(n_output, n_output, kernel_size=3, padding=1),
             torch.nn.BatchNorm2d(n_output),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose2d(n_output, n_output, kernel_size=3, padding=1,
-                                     stride=1),
-            torch.nn.BatchNorm2d(n_output),
-            torch.nn.ReLU()
-      )
-        self.downsample = None
-        if stride != 1 or n_input != n_output:
-            self.downsample = torch.nn.Sequential(
-                torch.nn.ConvTranspose2d(n_input, n_output, kernel_size=1,
-                                         output_padding=1, stride=stride),
-                torch.nn.BatchNorm2d(n_output))
+            torch.nn.ReLU())
 
     def forward(self, x):
-        identity = x
-        if self.downsample is not None:
-            identity = self.downsample(x)
-        return self.net(x) + identity
+        return self.net(x)
 
 
 class CNNClassifier(torch.nn.Module):
@@ -108,44 +86,50 @@ class CNNClassifier(torch.nn.Module):
 
 
 class FCN(torch.nn.Module):
-    def __init__(self, up_layers=[32], down_layers=[64], n_input_channels=3, n_classes=5):
+    def __init__(self, layers=[32,64,128], n_input_channels=3, n_classes=5, normalize=False):
         super().__init__()
-        L = []
 
-        # Add convolutional (downsampling) layers
-        c = n_input_channels
-        for l in up_layers:
-            L.append(Block(c, l, stride=2))
-            c = l
+        # Contracting path (Encoder)
+        self.down1 = Block(n_input_channels, layers[0])
+        self.down2 = Block(layers[0], layers[1])
+        self.down3 = Block(layers[1], layers[2])
 
-        # Add convolutional (upsampling) layers
-        c = up_layers[-1]
-        for l in down_layers:
-            L.append(TBlock(c, l, stride=2))
-            c = l
+        # Expansive path (Decoder)
+        self.up1 = TBlock(layers[2], layers[1])
+        self.conv1 = torch.nn.Conv2d(in_channels=layers[2], out_channels=layers[1], kernel_size=3, stride=1,
+                                     padding=1)
+        self.up2 = TBlock(layers[1], layers[0])
+        self.conv2 = torch.nn.Conv2d(in_channels=layers[1], out_channels=layers[0], kernel_size=3, stride=1,
+                                     padding=1)
+        self.up3 = TBlock(layers[0], n_classes)
 
-        # Add final layer
-        L.append(torch.nn.Conv2d(down_layers[-1], n_classes, kernel_size=3, padding=1))
-
-        # Put layers together
-        self.network = torch.nn.Sequential(*L)
+        # Other layers
+        # self.dropout = torch.nn.Dropout(p=dropout_prob)
+        self.max_pool = torch.nn.MaxPool2d(2)
 
     def forward(self, x):
+        # Encoder (downsampling)
+        d1 = self.down1(x)
+        d2 = self.max_pool(d1)
 
-        # Input normalization
-        normalize = Normalize(mean=[0.2784, 0.2653, 0.2624], std=[0.3466, 0.3290, 0.3459])
-        x = normalize(x)
+        d3 = self.down2(d2)
+        d4 = self.max_pool(d3)
 
-        # Save initial input
-        input = x
+        d5 = self.down3(d4)
+        d6 = self.max_pool(d5)
 
-        # Compute feature maps
-        x = self.network(x)
+        # Decoder (upsampling)
+        e1 = self.up1(d6)
+        s1 = torch.cat([e1, d4], dim=1)
+        c1 = self.conv1(s1)
 
-        # Crop the output to match the input size
-        x_cropped = x[:, :, :input.size()[2], :input.size()[3]]
+        e2 = self.up2(c1)
+        s2 = torch.cat([e2, d2], dim=1)
+        c2 = self.conv2(s2)
 
-        return x_cropped
+        e3 = self.up3(c2)
+
+        return e3
 
 
 model_factory = {

@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 from models import FCN, save_model
-from utils import load_dense_data, DENSE_CLASS_DISTRIBUTION, ConfusionMatrix
+from utils import load_dense_data, DENSE_CLASS_DISTRIBUTION, ConfusionMatrix, Transform, ToTensor
 import dense_transforms
 import torch.utils.tensorboard as tb
 
@@ -30,8 +30,8 @@ def train(args):
     # Data loading
     # train_loader = load_dense_data(dataset_path=ubuntu_train_path)
     # valid_loader = load_dense_data(dataset_path=ubuntu_valid_path)
-    train_loader = load_dense_data(dataset_path=colab_train_path)
-    valid_loader = load_dense_data(dataset_path=colab_valid_path)
+    train_loader = load_dense_data(dataset_path=colab_train_path, transform=Transform())
+    valid_loader = load_dense_data(dataset_path=colab_valid_path, transform=ToTensor())
 
     # Model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

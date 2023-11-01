@@ -107,7 +107,7 @@ class ToTensor:
 
 
 class DenseSuperTuxDataset(Dataset):
-    def __init__(self, dataset_path, transform=ToTensor()):
+    def __init__(self, dataset_path, transform):
         from glob import glob
         from os import path
         self.files = []
@@ -138,8 +138,8 @@ def load_data(dataset_path, args, transform, num_workers=0, batch_size=128):
     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 
-def load_dense_data(dataset_path, num_workers=0, batch_size=32, **kwargs):
-    dataset = DenseSuperTuxDataset(dataset_path, **kwargs)
+def load_dense_data(dataset_path, transform, num_workers=0, batch_size=32):
+    dataset = DenseSuperTuxDataset(dataset_path, transform)
     return DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, shuffle=True, drop_last=True)
 
 

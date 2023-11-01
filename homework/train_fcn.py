@@ -24,10 +24,14 @@ def train(args):
     # Paths to data
     ubuntu_train_path = r"/home/william/Desktop/UT_Austin_Computer_Vision/UTAustin_hw3/dense_data/train"
     ubuntu_valid_path = r"/home/william/Desktop/UT_Austin_Computer_Vision/UTAustin_hw3/dense_data/valid"
+    colab_train_path = r"/content/UTAustin_hw3/dense_data/train"
+    colab_valid_path = r"/content/UTAustin_hw3/dense_data/valid"
 
     # Data loading
-    train_loader = load_dense_data(dataset_path=ubuntu_train_path)
-    valid_loader = load_dense_data(dataset_path=ubuntu_valid_path)
+    # train_loader = load_dense_data(dataset_path=ubuntu_train_path)
+    # valid_loader = load_dense_data(dataset_path=ubuntu_valid_path)
+    train_loader = load_dense_data(dataset_path=colab_train_path)
+    valid_loader = load_dense_data(dataset_path=colab_valid_path)
 
     # Model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -61,20 +65,20 @@ def train(args):
             # Get accuracy
             confusion_matrix.add(preds=outputs.argmax(1), labels=labels)
 
-        print(confusion_matrix.iou)
+        print(f"Training performance for epoch {epoch}: {confusion_matrix.iou}")
 
-    # Validation
-    model.eval()
-    confusion_matrix = ConfusionMatrix
-    with torch.no_grad():
-        for images, labels in valid_loader:
-            images, labels = images.to(device), labels.to(device)
-            outputs = model(images)
+        # Validation
+        model.eval()
+        confusion_matrix = ConfusionMatrix()
+        with torch.no_grad():
+            for images, labels in valid_loader:
+                images, labels = images.to(device), labels.to(device)
+                outputs = model(images)
 
-            # Get accuracy
-            confusion_matrix.add(preds=outputs.argmax(1), labels=labels)
+                # Get accuracy
+                confusion_matrix.add(preds=outputs.argmax(1), labels=labels)
 
-    print(confusion_matrix.iou)
+        print(f"Validation performance for epoch {epoch}: {confusion_matrix.iou}")
 
     """
     Your code here, modify your HW1 / HW2 code

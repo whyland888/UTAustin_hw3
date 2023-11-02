@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-
 from models import FCN, save_model
 from utils import load_dense_data, DENSE_CLASS_DISTRIBUTION, ConfusionMatrix, Transform, ToTensor
 import dense_transforms
@@ -30,11 +29,12 @@ def train(args):
     # Data loading
     # train_loader = load_dense_data(dataset_path=ubuntu_train_path)
     # valid_loader = load_dense_data(dataset_path=ubuntu_valid_path)
-    train_loader = load_dense_data(dataset_path=colab_train_path, transform=Transform(), args=args)
-    valid_loader = load_dense_data(dataset_path=colab_valid_path, transform=ToTensor(), args=args)
+    train_loader = load_dense_data(dataset_path=ubuntu_train_path, transform=Transform(), args=args)
+    valid_loader = load_dense_data(dataset_path=ubuntu_valid_path, transform=None, args=args)
 
     # Model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
     model = FCN().to(device)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
@@ -79,6 +79,9 @@ def train(args):
                 confusion_matrix.add(preds=outputs.argmax(1), labels=labels)
 
         print(f"Validation performance for epoch {epoch}: {confusion_matrix.iou}")
+        if confusion_matrix.iou > epoch_loss[-1]:
+            save_model(model)
+        epoch_loss.append(confusion_matrix.iou)
 
     """
     Your code here, modify your HW1 / HW2 code

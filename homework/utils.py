@@ -119,16 +119,18 @@ class DenseSuperTuxDataset(Dataset):
 
     def __getitem__(self, idx):
         b = self.files[idx]
+        totensor = ToTensor()
         im = Image.open(b + '_im.jpg')
         lbl = Image.open(b + '_seg.png')
+        shape = np.shape(np.array(lbl))
+        lbl = np.array(lbl).flatten()
+        lbl = [int(x) for x in lbl]
+        lbl = np.reshape(lbl, shape)
+        lbl = totensor(lbl)
         if self.transform is not None:
             im = self.transform(self.args, im)
-            shape = np.shape(np.array(lbl))
-            lbl = np.array(lbl).flatten()
-            lbl = [int(x) for x in lbl]
-            lbl = np.reshape(lbl, shape)
-            totensor = ToTensor()
-            lbl = totensor(lbl)
+        else:
+            im = totensor(im)
 
         return im, lbl
 
